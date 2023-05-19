@@ -1,0 +1,69 @@
+Design a complete implementation on online marketplace in C++ following SOLID principles 
+that allows buyers to browse and purchase products from multiple sellers. 
+The marketplace should provide an easy-to-use interface for buyers to search and filter products,
+view product details, add products to their shopping cart, and checkout.
+The goal is to create a seamless and efficient online shopping experience for buyers.
+
+Mandatory Functionality
+• User Registration and Login
+• Users must be able to register and log in to their accounts.
+
+Product Fetch
+• The system should be able to retrieve any product using an identifier.
+
+Shopping Cart
+• Buyers should be able to add products to a shopping cart, view their cart, and checkout.
+• The checkout process should collect necessary information from the buyer, including shipping address,
+  payment information, and order confirmation.
+
+Order Management
+• Buyers should be able to view their order history and track their orders.
+
+Functions:
+
+1. createUser(User user): 
+	This function is used to create and store a new user in the system.
+    It takes a User object as input which contains the user's details like name, email, password, and other relevant information.
+    The function should validate the input data before storing the user. 
+
+2. getUser(String userld): 
+	This function retrieves the user's details based on their unique user ID.
+    It takes a userld as input and returns a User object containing the user's details.
+    The function should handle the case when the userld does not exist in the system.
+
+3. getProduct(String productid): 
+	This function retrieves the product's details based on its unique product ID. 
+    It takes a productid as input and returns a Product object containing the product's details.
+    The function should handle the case when the productld does not exist in the system.
+
+4. addToCart(String userld, String productid, int quantity): 
+	This function is used to add a product to the user's shopping cart.
+    It takes userid, productid, and quantity as inputs and adds the product to the user's cart with the specified quantity.
+    If the product is already in the cart, the quantity should be updated. 
+    The function should handle the case when either userld or productid does not exist in the system.
+
+5. getCart(String userld): 
+	This function retrieves the user's shopping cart. It takes userid as input and returns a list of Cartitem objects containing the details of each roduct in the user's cart. The function should handle the case when the userld does not exist in the system
+
+6. checkout(String userld): 
+	This function is used to check out the user's shopping cart. takes userid as input and completes the order by creating a new Order object and updating the inventory of each product in the cart. The function should handle the case when the userld does not exist in the system, or the cart is empty.
+
+7. getOrderHistory(String userld): 
+	This function retrieves. the user's order history. It takes userld as input and returns a list of Order objects containing the details of each completed order. The function should handle the case when the userid does not exist in the system, or the user has no order history.
+
+Evaluation Criteria:
+
+• The code should be working and cover all the mandatory functionalities.
+• Code readability, testability, and maintainability.
+• Proper Separation of concerns using Object-Oriented concepts.
+• Proper Algorithm and Data Structures choices.
+• SOLID principles should be followed. |
+• Proper error handling and validations
+• The system should be scalable and extensible for future changes and updates
+• You can use in-memory storage, but it should be extensible to integrate databases in future
+• Feel free to make relevant assumptions wherever required. Please list these assumptions.
+• Efficient use of resources, such as memory and processing power.
+
+
+* [execution time limit] 0.5 seconds (cpp)
+* [memory limit] 1 GB

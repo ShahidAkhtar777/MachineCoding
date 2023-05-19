@@ -16,6 +16,16 @@ public:
             return;
         }
 
+        if(userCart.find(userId) != userCart.end()){
+            vector<CartItem>& cart = userCart[userId];
+            for(int i=0;i<cart.size();i++){
+                if(cart[i].getProductId() == productId){
+                    cart[i].setQuantity(cart[i].getQuantity()+quantity);
+                    return;
+                }
+            }
+        }
+
         CartItem cartObject = CartItem(productId, quantity);
         userCart[userId].push_back(cartObject);
     }

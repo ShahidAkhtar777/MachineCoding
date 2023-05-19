@@ -20,6 +20,10 @@ public:
     int getQuantity(){
         return quantity;
     }
+
+    void setQuantity(int quantity){
+        this->quantity = quantity;
+    }
 };
 
 #endif
