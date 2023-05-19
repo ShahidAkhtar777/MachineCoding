@@ -1,0 +1,95 @@
+# Ride-Sharing Application - SDE II
+
+This project is an implementation of a ride-sharing application with the following features:
+
+## Features
+
+- Users can share rides on a route.
+- Users can offer a shared ride as a driver.
+- Users can consume a shared ride as a passenger.
+- Users can search and select from multiple available rides on a route with the same source and destination.
+
+## Requirements
+
+The application should provide the following functionalities:
+
+- User onboarding:
+  - `add_user(user_detail)`: Add basic user details.
+  - `add_vehicle(vehicle_detail)`: Add the user's vehicle(s) details.
+
+- Offer a shared ride:
+  - `offer_ride(ride_detail)`: Offer a ride with details such as the vehicle, origin, destination, and available seats.
+
+- Select a ride:
+  - `select_ride(source, destination, seats, selection_strategy)`: Select a ride from multiple offered rides based on a selection strategy (e.g., preferred vehicle or most vacant).
+
+- End a ride:
+  - `end_ride(ride_details)`: End a ride once there are no active offered rides for a given vehicle.
+
+- Ride statistics:
+  - `print_ride_stats()`: Display the total rides offered and taken by all users.
+
+### Bonus Question
+
+If the user's origin/destination is not available directly but is possible via multiple rides, the application should output multiple rides that can be taken.
+
+## Other Notes
+
+- A driver class should be implemented for demo purposes, executing all commands in one place in the code and testing the functionality.
+- The application does not require a database or NoSQL store; an in-memory data structure should be used instead.
+- No user interface (UI) is required for the application.
+- Code compilation, execution, and completion should be prioritized.
+- Focus on implementing the expected output first and then consider adding additional features of your own.
+
+## Expectations
+
+- Ensure the code is working and demonstrable.
+- Code should be functionally correct.
+- Use proper abstraction, modeling, and separation of concerns.
+- The code should be modular, readable, and unit-testable.
+- The code should easily accommodate new requirements with minimal changes.
+- Proper exception handling is required.
+
+## Sample Test Cases
+
+Here are some sample test cases to validate the application's functionality:
+
+1. Onboard 5 users:
+   - `add_user("Rohan, M, 36")`; `add_vehicle("Rohan, Swift, KA-01-12345")`
+   - `add_user("Shashank, M, 29")`; `add_vehicle("Shashank, Baleno, TS-05-62395")`
+   - `add_user("Nandini, F, 29")`
+   - `add_user("Shipra, F, 27")`; `add_vehicle("Shipra", "Polo", "KA-05-41491")`; `add_vehicle("Shipra, Activa KA-12-12332")`
+   - `add_user("Gaurav, M, 29")`
+   - `add_user("Rahul, M, 35)`; `add_vehicle("Rahul", "XUV", "KA-05-1234")`
+
+2. Offer 4 rides by 3 users:
+   - `offer_ride("Rohan, Origin=Hyderabad, Available Seats=1, Vehicle=Swift, KA-01-12345, Destination=Bangalore")`
+   - `offer_ride("Shipra, Origin=Bangalore, Available Seats=1, Vehicle=Activa KA-12-12332, Destination=Mysore")`
+   - `offer_ride("Shipra, Origin=B
+
+angalore, Available Seats=2, Vehicle=Polo, KA-05-41491, Destination=Mysore")`
+   - `offer_ride("Shashank, Origin=Hyderabad, Available Seats=2, Vehicle=Baleno, TS-05-62395, Destination=Bangalore")`
+   - `offer_ride("Rahul, Origin=Hyderabad, Available Seats=5, Vehicle=XUV, KA-05-1234, Destination=Bangalore")`
+   - `offer_ride("Rohan, Origin=Bangalore, Available Seats=1, Vehicle=Swift, KA-01-12345, Destination=Pune")` (This call should fail since a ride has already been offered by this user for this vehicle.)
+
+3. Find rides for 4 users:
+   - `select_ride("Nandini, Origin=Bangalore, Destination=Mysore, Seats=1, Most Vacant")` (Expected output: 2(c))
+   - `select_ride("Gaurav, Origin=Bangalore, Destination=Mysore, Seats=1, Preferred Vehicle=Activa")` (Expected output: 2(b))
+   - `select_ride("Shashank, Origin=Mumbai, Destination=Bangalore, Seats=1, Most Vacant")` (Expected output: No rides found)
+   - `select_ride("Rohan, Origin=Hyderabad, Destination=Bangalore, Seats=1, Preferred Vehicle=Baleno")` (Expected output: 2(d))
+   - `select_ride("Shashank, Origin=Hyderabad, Destination=Bangalore, Seats=1, Preferred Vehicle=Polo")` (Expected output: No rides found)
+
+4. End rides:
+   - `end_ride(2-a)`
+   - `end_ride(2-b)`
+   - `end_ride(2-c)`
+   - `end_ride(2-d)`
+
+5. Find total rides by user:
+   - `print_ride_stats()`
+     - Nandini: 1 Taken, 0 Offered
+     - Rohan: 1 Taken, 1 Offered
+     - Shashank: 0 Taken, 1 Offered
+     - Gaurav: 1 Taken, 0 Offered
+     - Rahul: 0 Taken, 0 Offered
+     - Shipra: 0 Taken, 2 Offered
