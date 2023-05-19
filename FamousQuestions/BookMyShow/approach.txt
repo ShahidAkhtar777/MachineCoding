@@ -1,0 +1,1 @@
+Approach: https://www.geeksforgeeks.org/design-bookmyshow-a-system-design-interview-question/
