@@ -1,6 +1,4 @@
-#ifndef CARTREPO_H
-#define CARTREPO_H
-
+#pragma once
 #include "../models/cart.h"
 #include "../models/user.h"
 #include "productRepo.h"
@@ -59,5 +57,3 @@ public:
     }
 
 };
-
-#endif

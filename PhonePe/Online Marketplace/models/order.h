@@ -1,6 +1,4 @@
-#ifndef ORDER_H
-#define ORDER_H
-
+#pragma once
 #include<bits/stdc++.h>
 #include<ctime>
 #include <iomanip>
@@ -40,4 +38,3 @@ public:
     }
 };
 
-#endif 

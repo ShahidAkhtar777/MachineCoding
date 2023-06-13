@@ -1,6 +1,4 @@
-#ifndef USERREPO_H
-#define USERREPO_H
-
+#pragma once
 #include "../models/user.h"
 #include<bits/stdc++.h>
 using namespace std;
@@ -42,5 +40,3 @@ public:
         return NULL;
     }
 };
-
-#endif

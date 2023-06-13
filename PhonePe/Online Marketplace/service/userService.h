@@ -1,7 +1,4 @@
-#ifndef USERSERVICE_H
-#define USERSERVICE_H
-
-
+#pragma once
 #include "../repo/userRepo.h"
 #include "../repo/sessionRepo.h"
 #include<bits/stdc++.h>
@@ -56,11 +53,8 @@ public:
     User* getUserByUserId(int userId){
         User* user = userRepo->getUserById(userId);
         if(user==NULL){
-            cout<<"User not exists"<<endl;
             return NULL;
         }
         return user;
     }
 };
-
-#endif

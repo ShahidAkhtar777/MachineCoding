@@ -1,6 +1,4 @@
-#ifndef CARTSERVICE_H
-#define CARTSERVICE_H
-
+#pragma once
 #include "../repo/cartRepo.h"
 #include "userService.h"
 #include "productService.h"
@@ -65,5 +63,3 @@ public:
         cartRepo->removeCartItem(userId, productId);
     }
 };
-
-#endif

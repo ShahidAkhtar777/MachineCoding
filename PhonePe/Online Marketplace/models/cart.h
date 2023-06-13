@@ -1,6 +1,4 @@
-#ifndef CART_H
-#define CART_H
-
+#pragma once
 #include <bits/stdc++.h>
 #include "product.h"
 #include "user.h"
@@ -26,4 +24,3 @@ public:
     }
 };
 
-#endif

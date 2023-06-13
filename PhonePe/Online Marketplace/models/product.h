@@ -1,6 +1,4 @@
-#ifndef PRODUCT_H
-#define PRODUCT_H
-
+#pragma once
 #include<bits/stdc++.h>
 #include<ctime>
 using namespace std;
@@ -46,5 +44,3 @@ public:
         this->inventory = inventory;
     }
 };
-
-#endif 

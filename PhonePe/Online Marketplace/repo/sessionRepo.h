@@ -1,6 +1,4 @@
-#ifndef SESSIONREPO_H
-#define SESSIONREPO_H
-
+#pragma once
 #include<bits/stdc++.h>
 #include "../models/user.h"
 using namespace std;
@@ -40,5 +38,3 @@ public:
         return false;
     }
 };
-
-#endif
