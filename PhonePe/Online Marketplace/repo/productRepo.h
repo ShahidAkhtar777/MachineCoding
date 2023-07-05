@@ -1,6 +1,4 @@
-#ifndef PRODUCTREPO_H
-#define PRODUCTREPO_H
-
+#pragma once
 #include<bits/stdc++.h>
 #include "../models/product.h"
 using namespace std;
@@ -52,5 +50,3 @@ public:
         return products;
     }
 };
-
-#endif

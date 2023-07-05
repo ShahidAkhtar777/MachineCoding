@@ -1,6 +1,4 @@
-#ifndef ORDERREPO_H
-#define ORDERREPO_H
-
+#pragma once
 #include "../models/order.h"
 #include "../models/cart.h"
 #include<bits/stdc++.h>
@@ -26,5 +24,3 @@ public:
         return vector<Order>{};
     }
 };
-
-#endif

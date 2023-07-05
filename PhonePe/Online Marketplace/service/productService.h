@@ -1,6 +1,4 @@
-#ifndef PRODUCTSERVICE_H
-#define PRODUCTSERVICE_H
-
+#pragma once
 #include "../repo/productRepo.h"
 #include<bits/stdc++.h>
 using namespace std;
@@ -49,5 +47,3 @@ public:
         productRepo->updateProduct(*oldProduct, *newProduct);
     }
 };
-
-#endif

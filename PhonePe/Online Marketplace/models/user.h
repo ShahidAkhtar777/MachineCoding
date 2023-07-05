@@ -1,6 +1,4 @@
-#ifndef USER_H
-#define USER_H
-
+#pragma once
 #include<bits/stdc++.h>
 using namespace std;
 
@@ -30,5 +28,3 @@ public:
         return password;
     }
 };
-
-#endif 

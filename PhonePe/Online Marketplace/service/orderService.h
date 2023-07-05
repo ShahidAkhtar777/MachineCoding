@@ -1,6 +1,4 @@
-#ifndef ORDERSERVICE_H
-#define ORDERSERVICE_H
-
+#pragma once
 #include "../repo/orderRepo.h"
 #include "userService.h"
 #include "productService.h"
@@ -26,7 +24,7 @@ public:
     void checkout(int userId, string shippingAddress) {
         User* user = userService->getUserByUserId(userId);
         if (user == NULL) {
-            cout<<"You need to log in first to checkout";
+            cout<<"No user exits"<<endl;
             return;
         }
 
@@ -102,5 +100,3 @@ public:
         }
     }
 };
-
-#endif
