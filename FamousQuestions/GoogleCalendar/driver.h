@@ -280,17 +280,32 @@ private:
             int userId;
             cout << "Enter user " << i + 1 << " ID: ";
             cin >> userId;
-            if(userService.getUserById(userId))
-                users.push_back(*userService.getUserById(userId));
-            else 
-                cout<<"User not exists\n"<<endl;
+            User* user = userService.getUserById(userId);
+            if (user) {
+                users.push_back(*user);
+            } else {
+                cout << "User not exists\n" << endl;
+            }
         }
 
         time_t meetingDuration;
         cout << "Enter meeting duration (in seconds): ";
         cin >> meetingDuration;
 
-        time_t mutuallyAvailableTime = calendarService.findMutuallyAvailableTimeSlot(users, meetingDuration);
+        // Input the desired day for the meeting
+        int year, month, day;
+        cout << "Enter the year for the desired day: ";
+        cin >> year;
+        cout << "Enter the month for the desired day (1-12): ";
+        cin >> month;
+        cout << "Enter the day for the desired day: ";
+        cin >> day;
+
+        // Construct the target date for the meeting
+        tm targetDate = {0, 0, 0, day, month - 1, year - 1900};
+        time_t targetTime = mktime(&targetDate);
+
+        time_t mutuallyAvailableTime = calendarService.findMutuallyAvailableTimeSlot(users, meetingDuration, targetTime);
         if (mutuallyAvailableTime != -1) {
             cout << "Mutually available time slot found: " << ctime(&mutuallyAvailableTime);
         } else {
