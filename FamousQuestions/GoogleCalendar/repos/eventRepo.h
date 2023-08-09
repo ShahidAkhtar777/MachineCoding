@@ -6,27 +6,28 @@ using namespace std;
 
 class EventRepository {
 public:
-    void addEvent(string title, string location, User owner, EventType type,
-          vector<User> users, time_t startTime, time_t endTime) {
+    Event* addEvent(string title, string location, User owner, EventType type,
+          vector<pair<User,Status>> attendees, time_t startTime, time_t endTime) {
         int newEventId = getNextEventId();
-        Event *e = new Event(newEventId, title, location, owner, type, users, startTime, endTime);
+        Event *e = new Event(newEventId, title, location, owner, type, attendees, startTime, endTime);
         events[newEventId] = *e;
+        return e;
     }
     
     void updateEvent(int eventId, string title, string location, User owner, EventType type,
-          vector<User> users, time_t startTime, time_t endTime) {
+          vector<pair<User,Status>> attendees, time_t startTime, time_t endTime) {
         Event existingEvent = events[eventId];
         existingEvent.setTitle(title);
         existingEvent.setLocation(location);
         existingEvent.setOwner(owner);
         existingEvent.setEventType(type);
-        existingEvent.setUsers(users);
+        existingEvent.setUsers(attendees);
         existingEvent.setStartTime(startTime);
         existingEvent.setEndTime(endTime);
     }
     
-    void deleteEvent(Event event) {
-        events.erase(event.getEventId());
+    void deleteEvent(int eventId) {
+        events.erase(eventId);
     }
     
     Event* getEventById(int eventId) {
@@ -48,15 +49,51 @@ public:
         return eventsForDate;
     }
 
-    vector<Event> getEventsForUser(const User& user) {
+    vector<Event> getAcceptedEventsForUser(int userId) {
         vector<Event> userEvents;
         for (auto eventPair : events) {
             Event event = eventPair.second;
-            if (event.hasUser(user)) {
+            if (event.userAcceptedEvent(userId)) {
                 userEvents.push_back(event);
             }
         }
         return userEvents;
+    }
+
+    vector<pair<Event, Status>> getAllEventsByUserId(int userId) {
+        vector<pair<Event, Status>> userEvents;
+        for (auto eventPair : events) {
+            Event event = eventPair.second;
+            Status s = event.getStatusForUser(userId);
+            if(s!=Status::INVALID)
+                userEvents.push_back({event, s});
+        }
+        return userEvents;
+    }
+
+    vector<Event> getAllEvents() {
+        vector<Event> allEvents;
+        for (auto eventPair : events) {
+            Event event = eventPair.second;
+            allEvents.push_back(event);
+        }
+        return allEvents;
+    }
+
+    void acceptEventForUser(int eventId, int userId){
+        for (auto eventPair : events) {
+            Event event = eventPair.second;
+            if(eventId == event.getEventId())
+                event.acceptEvent(userId);
+        }
+    }
+
+    void rejectEventForUser(int eventId, int userId){
+        for (auto eventPair : events) {
+            Event event = eventPair.second;
+            if(eventId == event.getEventId())
+                event.rejectEvent(userId);
+        }
     }
     
 private:
@@ -70,11 +107,20 @@ private:
         tm edTime = *localtime(&timestamp2);
         tm event = *localtime(&timestamp3);
 
+        // Case 1: Same Yr and month
+        bool yr = (stTime.tm_year == event.tm_year && event.tm_year == edTime.tm_year);
+        bool mth = (stTime.tm_mon == event.tm_mon && event.tm_mon == edTime.tm_mon);
+        bool dy = (stTime.tm_mday <= event.tm_mday && event.tm_mday <= edTime.tm_mday);
+
+        if( yr && mth)
+            return dy;
+
+        // Case 2: Not same yr || month
         bool year = (stTime.tm_year <= event.tm_year && event.tm_year <= edTime.tm_year);
         bool month = (stTime.tm_mon <= event.tm_mon && event.tm_mon <= edTime.tm_mon);
         bool day = (stTime.tm_mday <= event.tm_mday && event.tm_mday <= edTime.tm_mday);
-        return year & month & day;
+        return year && month && day;
     }
     
-    unordered_map<int, Event> events;
+    unordered_map<int, Event> events; // { eventId } -> [Events]
 };

@@ -7,8 +7,8 @@ class UserService {
 public:
     UserService(UserRepository* userRepository) : userRepository(userRepository) {}
 
-    void createUser(string username) {
-        userRepository->addUser(username);
+    User* createUser(string username) {
+        return userRepository->addUser(username);
     }
 
     User* getUserById(int userId) {

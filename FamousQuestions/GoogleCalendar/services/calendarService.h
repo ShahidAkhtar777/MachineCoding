@@ -10,25 +10,20 @@ public:
     CalendarService(EventRepository* eventRepository) : eventRepository(eventRepository) {}
 
     vector<Event> getEventsForDay(time_t date) {
-        vector<Event> events = eventRepository->getEventsByDate(date);
-        // Filter events for the specified day
-        vector<Event> eventsForDay;
-        for (Event event : events) {
-            if (isSameDay(event.getStartTime(), date)) {
-                eventsForDay.push_back(event);
-            }
-        }
+        vector<Event> eventsForDay = eventRepository->getEventsByDate(date);
         return eventsForDay;
     }
 
     vector<Event> getEventsForWeek(time_t date) {
-        vector<Event> events = eventRepository->getEventsByDate(date);
-        // Filter events for the specified week
+        vector<Event> events = eventRepository->getAllEvents();
+        
         vector<Event> eventsForWeek;
         time_t startOfWeek = getStartOfWeek(date); 
         time_t endOfWeek = getEndOfWeek(date);     
         for (Event event : events) {
-            if (event.getStartTime() >= startOfWeek && event.getEndTime() <= endOfWeek) {
+            if (event.getStartTime() > endOfWeek || event.getEndTime() < startOfWeek) {
+                continue;
+            } else {
                 eventsForWeek.push_back(event);
             }
         }
@@ -37,21 +32,24 @@ public:
 
     vector<Event> getEventsForMonth(time_t date) {
         vector<Event> events = eventRepository->getEventsByDate(date);
-        // Filter events for the specified month
+
         vector<Event> eventsForMonth;
         time_t startOfMonth = getStartOfMonth(date); 
         time_t endOfMonth = getEndOfMonth(date);     
         for (Event event : events) {
-            if (event.getStartTime() >= startOfMonth && event.getEndTime() <= endOfMonth) {
+            if (event.getStartTime() > endOfMonth || event.getEndTime() < startOfMonth) {
+                continue;
+            } else {
                 eventsForMonth.push_back(event);
             }
         }
         return eventsForMonth;
     }
 
-    time_t findMutuallyAvailableTimeSlot(const vector<User>& users, time_t meetingDuration, time_t targetTime) {
-        vector<time_t> busyTimes;
-        struct tm* targetTm = localtime(&targetTime);
+    time_t findMutuallyAvailableTimeSlot(vector<int> userIds, time_t meetingDuration, time_t targetTime) {
+        vector<pair<time_t, time_t>> busyTimes;
+        vector<pair<time_t, time_t>> freeTimes;
+        tm* targetTm = localtime(&targetTime);
         targetTm->tm_hour = 0;
         targetTm->tm_min = 0;
         targetTm->tm_sec = 0;
@@ -59,56 +57,48 @@ public:
         time_t targetDayStart = mktime(targetTm);
         time_t targetDayEnd = targetDayStart + 24 * 60 * 60;
 
-        for (const User& user : users) {
-            vector<Event> userEvents = eventRepository->getEventsForUser(user);
+        for (auto userId : userIds) {
+            vector<Event> userEvents = eventRepository->getAcceptedEventsForUser(userId);
             for (Event event : userEvents) {
                 time_t eventStartTime = event.getStartTime();
-                if (eventStartTime >= targetDayStart && eventStartTime <= targetDayEnd) {
-                    busyTimes.push_back(eventStartTime);
-                    busyTimes.push_back(event.getEndTime());
+                time_t eventEndTime = event.getEndTime();
+                if (eventStartTime >= targetDayStart && eventEndTime <= targetDayEnd) {
+                    busyTimes.push_back({eventStartTime, eventEndTime});
                 }
             }
         }
 
-        struct tm* targetTm = localtime(&targetTime);
-        targetTm->tm_hour = 0;
-        targetTm->tm_min = 0;
-        targetTm->tm_sec = 0;
-        time_t targetBeginningOfDay = mktime(targetTm);
-        targetTm->tm_hour = 23;
-        targetTm->tm_min = 59;
-        targetTm->tm_sec = 59;
-        time_t targetEndOfDay = mktime(targetTm);
-
-        busyTimes.push_back(targetBeginningOfDay);
-        busyTimes.push_back(targetEndOfDay);
-
         sort(busyTimes.begin(), busyTimes.end());
 
-        for (size_t i = 1; i < busyTimes.size(); ++i) {
-            time_t previousEndTime = busyTimes[i - 1];
-            time_t currentStartTime = busyTimes[i];
-            if (currentStartTime - previousEndTime >= meetingDuration) {
-                return previousEndTime;
+        time_t lastEndTime = targetDayStart;
+        time_t maxEventEndTime = targetDayStart;
+
+        for (size_t i = 0; i < busyTimes.size(); ++i) {
+            time_t previousEndTime = lastEndTime;
+            time_t currentStartTime = busyTimes[i].first;
+            maxEventEndTime = max(maxEventEndTime, busyTimes[i].second);
+            if (currentStartTime > previousEndTime) {
+                freeTimes.push_back({previousEndTime, currentStartTime});
             }
+            lastEndTime = busyTimes[i].second;
+        }
+
+        if(maxEventEndTime!=targetDayEnd)
+            freeTimes.push_back({maxEventEndTime, targetDayEnd});
+
+        for(auto freeSlot: freeTimes){
+            if(freeSlot.second - freeSlot.first >= meetingDuration)
+                return freeSlot.first;
         }
 
         return -1;
     }
-
     
-
 private:
     EventRepository* eventRepository;
-    
-    bool isSameDay(time_t timestamp1, time_t timestamp2) {
-        struct tm tm1 = *localtime(&timestamp1);
-        struct tm tm2 = *localtime(&timestamp2);
-        return tm1.tm_year == tm2.tm_year && tm1.tm_mon == tm2.tm_mon && tm1.tm_mday == tm2.tm_mday;
-    }
 
     time_t getStartOfWeek(time_t date) {
-        struct tm tmDate = *localtime(&date);
+        tm tmDate = *localtime(&date);
         tmDate.tm_hour = 0;
         tmDate.tm_min = 0;
         tmDate.tm_sec = 0;
@@ -117,7 +107,7 @@ private:
     }
 
     time_t getEndOfWeek(time_t date) {
-        struct tm tmDate = *localtime(&date);
+        tm tmDate = *localtime(&date);
         tmDate.tm_hour = 23;
         tmDate.tm_min = 59;
         tmDate.tm_sec = 59;
@@ -126,7 +116,7 @@ private:
     }
 
     time_t getStartOfMonth(time_t date) {
-        struct tm tmDate = *localtime(&date);
+        tm tmDate = *localtime(&date);
         tmDate.tm_hour = 0;
         tmDate.tm_min = 0;
         tmDate.tm_sec = 0;
@@ -135,7 +125,7 @@ private:
     }
 
     time_t getEndOfMonth(time_t date) {
-        struct tm tmDate = *localtime(&date);
+        tm tmDate = *localtime(&date);
         tmDate.tm_hour = 23;
         tmDate.tm_min = 59;
         tmDate.tm_sec = 59;

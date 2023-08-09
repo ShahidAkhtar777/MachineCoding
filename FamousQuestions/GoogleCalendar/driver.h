@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <sstream>
 #include <ctime>
+#include <string>
 #include <chrono>
 using namespace std;
 
@@ -45,6 +46,12 @@ public:
                 case 7:
                     findMutuallyAvailableTimeSlot();
                     break;
+                case 8: 
+                    displayUsersEvents();
+                    break;
+                case 9: 
+                    acceptRejectUserEvent();
+                    break;
                 case 0:
                     cout << "Exiting the Calendar App. Goodbye!" << endl;
                     return;
@@ -70,31 +77,43 @@ private:
         return chrono::system_clock::to_time_t(tp);
     }
 
+    time_t convertStringToDay(string timeStr) {
+        tm tmStruct = {};
+        istringstream ss(timeStr);
+        ss >> get_time(&tmStruct, "%Y-%m-%d");
+        auto tp = chrono::system_clock::from_time_t(std::mktime(&tmStruct));
+        return chrono::system_clock::to_time_t(tp);
+    }
+
     void displayMenu() {
         cout << "Choose an action:" << endl;
-        cout << "1. Create User" << endl;
-        cout << "2. Create Event" << endl;
-        cout << "3. Update Event" << endl;
-        cout << "4. Get Events for Day" << endl;
-        cout << "5. Get Events for Week" << endl;
-        cout << "6. Get Events for Month" << endl;
-        cout << "7. Find Mutually Available Time Slot" << endl;
-        cout << "0. Exit" << endl;
+        cout << "\t" << "1. Create User" << endl;
+        cout << "\t" << "2. Create Event" << endl;
+        cout << "\t" << "3. Update Event" << endl;
+        cout << "\t" << "4. Get Events for Day" << endl;
+        cout << "\t" << "5. Get Events for Week" << endl;
+        cout << "\t" << "6. Get Events for Month" << endl;
+        cout << "\t" << "7. Find Mutually Available Time Slot" << endl;
+        cout << "\t" << "8. Display User's All Events" <<endl;
+        cout << "\t" << "9. Accept/Reject an Event for User" << endl;
+        cout << "\t" << "0. Exit" << endl;
     }
 
     void createUser() {
         string username;
         cout << "Enter username: ";
         cin >> username;
-        userService.createUser(username);
-        cout << "User created." << endl;
+        User *u = userService.createUser(username);
+        if(u)
+            cout << "User created with userId: " << u->getUserId() << endl;
+        else
+            cout<< "Something went wrong." <<endl;
     }
 
     void createEvent() {
         string title, location;
-        time_t startTime, endTime;
         int ownerId, numUsers;
-        vector<User> users;
+        vector<pair<User, Status>> users;
 
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
         cout << "Enter event title: ";
@@ -114,19 +133,29 @@ private:
             cout << "Enter user " << i + 1 << " ID: ";
             cin >> userId;
             if(userService.getUserById(userId))
-                users.push_back(*userService.getUserById(userId));
+                users.push_back({*userService.getUserById(userId), Status::NEUTRAL});
             else
                 cout<<"User not exists\n"<<endl;
         }
 
         // Collect start time and end time in seconds since the epoch
-        cout << "Enter start time (in seconds since epoch): ";
-        cin >> startTime;
-        cout << "Enter end time (in seconds since epoch): ";
-        cin >> endTime;
+        cout << "Enter start time (YYYY-MM-DD HH:MM): ";
+        string startTimeStr;
+        getline(cin, startTimeStr);
+        time_t startTime = convertStringToTime(startTimeStr);
+        // Clear input buffer
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        
+        cout << "Enter end time (YYYY-MM-DD HH:MM): ";
+        string endTimeStr;
+        getline(cin, endTimeStr);
+        time_t endTime = convertStringToTime(endTimeStr);
 
-        eventService.createEvent(title, location, *owner, EventType::MEETING, users, startTime, endTime);
-        cout << "Event created." << endl;
+        Event *e = eventService.createEvent(title, location, *owner, EventType::MEETING, users, startTime, endTime);
+        if(e)
+            cout << "Event created with eventId: " << e->getEventId() << endl;
+        else    
+            cout << "Something went wrong. Please try again." << endl;
     }
 
     void updateEvent() {
@@ -148,16 +177,6 @@ private:
             string location;
             getline(cin, location);
 
-            cout << "Enter start time (YYYY-MM-DD HH:MM): ";
-            string startTimeStr;
-            getline(cin, startTimeStr);
-            time_t startTime = convertStringToTime(startTimeStr);
-
-            cout << "Enter end time (YYYY-MM-DD HH:MM): ";
-            string endTimeStr;
-            getline(cin, endTimeStr);
-            time_t endTime = convertStringToTime(endTimeStr);
-
             cout << "Enter owner's userId: ";
             int userId;
             cin>>userId;
@@ -168,13 +187,13 @@ private:
             cout << "Enter the number of attendees: ";
             cin >> numAttendees;
             cin.ignore();
-            vector<User> attendees;
+            vector<pair<User,Status>> attendees;
             for (int i = 0; i < numAttendees; ++i) {
                 cout << "Enter userId of attendee " << i + 1 << ": ";
                 int attendeeId;
                 cin>>attendeeId;
                 User *attendee = userService.getUserById(attendeeId);
-                attendees.push_back(*attendee);
+                attendees.push_back({*attendee, Status::NEUTRAL});
             }
 
             // Update event type
@@ -205,6 +224,19 @@ private:
                     break;
             }
 
+            cout << "Enter start time (YYYY-MM-DD HH:MM): ";
+            string startTimeStr;
+            getline(cin, startTimeStr);
+            time_t startTime = convertStringToTime(startTimeStr);
+
+            // Clear input buffer
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+            cout << "Enter end time (YYYY-MM-DD HH:MM): ";
+            string endTimeStr;
+            getline(cin, endTimeStr);
+            time_t endTime = convertStringToTime(endTimeStr);
+
             eventService.updateEvent(eventId, title, location, *owner, eventType, attendees, startTime, endTime);
             cout << "Event updated successfully:" << endl;
         } else {
@@ -212,6 +244,49 @@ private:
         }
     }
 
+
+    void displayUsersEvents() {
+        cout << "Enter UserID: ";
+        int userId;
+        cin>>userId;
+
+        vector<pair<Event, Status>> allUserEvents = eventService.getAllUserEvents(userId);
+        for(auto event: allUserEvents) {
+            Status type = event.second;
+            string userStatus;
+            switch(type){
+                case(Status::ACCEPTED):
+                    userStatus = "Accepted";
+                    break;
+                case(Status::REJECTED):
+                    userStatus = "Rejected";
+                    break;
+                case(Status::NEUTRAL):
+                    userStatus = "Neutral";
+                    break;
+            }
+            cout<< "Event Id: " << event.first.getEventId() << ", Status: " << userStatus << 
+            ", Start: " << event.first.getStartTime() << ", End: " << event.first.getEndTime() <<endl; 
+        }
+    }
+
+    void acceptRejectUserEvent() {
+        cout << "Enter UserID: \n";
+        int userId;
+        cin>>userId;
+        cout << "Enter EventID: \n";
+        int eventId;
+        cin>>eventId;
+
+        char status; 
+        cout << "Enter (A) Accept (R) Reject\n";
+        cin>>status;
+        if(status == 'A' || status == 'a')
+            eventService.acceptEventForUser(eventId, userId);
+        else if(status == 'R' || status == 'r') {
+            eventService.rejectEventForUser(eventId, userId);
+        }
+    }
 
     void displayEvents(vector<Event> events) {
         for (Event event : events) {
@@ -237,36 +312,64 @@ private:
             cout << endl;
             
             cout << "Users: ";
-            for (User user : event.getUsers()) {
-                cout << user.getUsername() << ", ";
+            for (auto user : event.getUsers()) {
+                Status type = user.second;
+                string userStatus;
+                switch(type){
+                    case(Status::ACCEPTED):
+                        userStatus = "Accepted";
+                        break;
+                    case(Status::REJECTED):
+                        userStatus = "Rejected";
+                        break;
+                    case(Status::NEUTRAL):
+                        userStatus = "Neutral";
+                        break;
+                }
+                cout << "\t" << user.first.getUsername() << ": " << userStatus << "\n";
             }
             cout << endl;
-            
             cout << "Start Time: " << event.getStartTime();
             cout << "End Time: " << event.getEndTime();
-            cout << "Accepted: " << (event.isNeutral() ? "Neutral" : (event.isAccepted() ? "Accepted" : "Rejected")) << endl;
-            
             cout << "--------------------------" << endl;
         }
     }
 
     void getEventsForDay() {
-        time_t currentDate = time(0);
-        vector<Event> eventsForDay = calendarService.getEventsForDay(currentDate);
+        cout << "Enter date (YYYY-MM-DD): ";
+        string eventDateStr;
+        getline(cin, eventDateStr);
+        time_t eventDate = convertStringToDay(eventDateStr);
+        // Clear input buffer
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+        vector<Event> eventsForDay = calendarService.getEventsForDay(eventDate);
         cout << "Events for the day:" << endl;
         displayEvents(eventsForDay);
     }
 
     void getEventsForWeek() {
-        time_t currentDate = time(0);
-        vector<Event> eventsForWeek = calendarService.getEventsForWeek(currentDate);
+        cout << "Enter any date in that week (YYYY-MM-DD): ";
+        string eventDateStr;
+        getline(cin, eventDateStr);
+        // Clear input buffer
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+        time_t eventDate = convertStringToDay(eventDateStr);
+        vector<Event> eventsForWeek = calendarService.getEventsForWeek(eventDate);
         cout << "Events for the week:" << endl;
         displayEvents(eventsForWeek);
     }
 
     void getEventsForMonth() {
-        time_t currentDate = time(0);
-        vector<Event> eventsForMonth = calendarService.getEventsForMonth(currentDate);
+        cout << "Enter any date in that month (YYYY-MM-DD): ";
+        string eventDateStr;
+        getline(cin, eventDateStr);
+        time_t eventDate = convertStringToDay(eventDateStr);
+        // Clear input buffer
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+        vector<Event> eventsForMonth = calendarService.getEventsForMonth(eventDate);
         cout << "Events for the month:" << endl;
         displayEvents(eventsForMonth);
     }
@@ -275,14 +378,14 @@ private:
         int numUsers;
         cout << "Enter number of users: ";
         cin >> numUsers;
-        vector<User> users;
+        vector<int> userIds;
         for (int i = 0; i < numUsers; ++i) {
             int userId;
             cout << "Enter user " << i + 1 << " ID: ";
             cin >> userId;
             User* user = userService.getUserById(userId);
             if (user) {
-                users.push_back(*user);
+                userIds.push_back(userId);
             } else {
                 cout << "User not exists\n" << endl;
             }
@@ -305,7 +408,7 @@ private:
         tm targetDate = {0, 0, 0, day, month - 1, year - 1900};
         time_t targetTime = mktime(&targetDate);
 
-        time_t mutuallyAvailableTime = calendarService.findMutuallyAvailableTimeSlot(users, meetingDuration, targetTime);
+        time_t mutuallyAvailableTime = calendarService.findMutuallyAvailableTimeSlot(userIds, meetingDuration, targetTime);
         if (mutuallyAvailableTime != -1) {
             cout << "Mutually available time slot found: " << ctime(&mutuallyAvailableTime);
         } else {

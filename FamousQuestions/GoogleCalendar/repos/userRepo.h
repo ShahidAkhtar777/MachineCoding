@@ -7,11 +7,12 @@ using namespace std;
 class UserRepository
 {
 public:
-    void addUser(string username)
+    User* addUser(string username)
     {
         int newUserId = getNextUserId();
         User *u = new User(newUserId, username);
         users[newUserId] = *u;
+        return u;
     }
 
     User* getUserById(int userId)
