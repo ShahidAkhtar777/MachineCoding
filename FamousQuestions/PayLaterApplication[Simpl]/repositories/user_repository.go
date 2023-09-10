@@ -1,17 +1,17 @@
 package repositories
 
 import (
-	"errors"
 	"github.com/ShahidAkhtar777/SystemDesign/FamousQuestions/PayLaterApplication/models"
 	"sync"
 )
 
 type UserRepository interface {
 	Create(user *models.User) error
-	FindByID(id string) (*models.User, error)
+	FindByID(userID string) (*models.User, error)
 	FindAll() ([]*models.User, error)
 	Update(user *models.User) error
-	Delete(id string) error
+	Delete(userID string) error
+	GetCreditLimit(userID string) (float64, error)
 }
 
 type InMemoryUserRepository struct {
@@ -30,7 +30,7 @@ func (r *InMemoryUserRepository) Create(user *models.User) error {
 	defer r.mu.Unlock()
 
 	if _, exists := r.users[user.ID]; exists {
-		return errors.New("user already exists")
+		return models.ErrUserAlreadyExists
 	}
 
 	r.users[user.ID] = user
@@ -43,7 +43,7 @@ func (r *InMemoryUserRepository) FindByID(id string) (*models.User, error) {
 
 	user, exists := r.users[id]
 	if !exists {
-		return nil, errors.New("user not found")
+		return nil, models.ErrUserNotFound
 	}
 
 	return user, nil
@@ -66,7 +66,7 @@ func (r *InMemoryUserRepository) Update(user *models.User) error {
 	defer r.mu.Unlock()
 
 	if _, exists := r.users[user.ID]; !exists {
-		return errors.New("user not found")
+		return models.ErrUserNotFound
 	}
 
 	r.users[user.ID] = user
@@ -78,9 +78,18 @@ func (r *InMemoryUserRepository) Delete(id string) error {
 	defer r.mu.Unlock()
 
 	if _, exists := r.users[id]; !exists {
-		return errors.New("user not found")
+		return models.ErrUserNotFound
 	}
 
 	delete(r.users, id)
 	return nil
+}
+
+func (r *InMemoryUserRepository) GetCreditLimit(userID string) (float64, error) {
+	for _, user := range r.users {
+		if user.ID == userID {
+			return user.CreditLimit, nil
+		}
+	}
+	return 0, models.ErrUserNotFound
 }

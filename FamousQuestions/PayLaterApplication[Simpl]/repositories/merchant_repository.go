@@ -1,7 +1,6 @@
 package repositories
 
 import (
-	"errors"
 	"github.com/ShahidAkhtar777/SystemDesign/FamousQuestions/PayLaterApplication/models"
 	"sync"
 )
@@ -32,7 +31,7 @@ func (r *InMemoryMerchantRepository) Create(merchant *models.Merchant) error {
 	defer r.mu.Unlock()
 
 	if _, exists := r.merchants[merchant.ID]; exists {
-		return errors.New("merchant already exists")
+		return models.ErrMerchantAlreadyExists
 	}
 
 	r.merchants[merchant.ID] = merchant
@@ -45,7 +44,7 @@ func (r *InMemoryMerchantRepository) FindByID(id string) (*models.Merchant, erro
 
 	merchant, exists := r.merchants[id]
 	if !exists {
-		return nil, errors.New("merchant not found")
+		return nil, models.ErrMerchantNotFound
 	}
 
 	return merchant, nil
@@ -68,7 +67,7 @@ func (r *InMemoryMerchantRepository) Update(merchant *models.Merchant) error {
 	defer r.mu.Unlock()
 
 	if _, exists := r.merchants[merchant.ID]; !exists {
-		return errors.New("merchant not found")
+		return models.ErrMerchantNotFound
 	}
 
 	r.merchants[merchant.ID] = merchant
@@ -80,7 +79,7 @@ func (r *InMemoryMerchantRepository) Delete(id string) error {
 	defer r.mu.Unlock()
 
 	if _, exists := r.merchants[id]; !exists {
-		return errors.New("merchant not found")
+		return models.ErrMerchantNotFound
 	}
 
 	delete(r.merchants, id)

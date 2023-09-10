@@ -9,10 +9,12 @@ import (
 // TransactionRepository defines the interface for interacting with transactions.
 type TransactionRepository interface {
 	Create(transaction *models.Transaction) error
-	FindByID(id string) (*models.Transaction, error)
+	FindByID(merchantID string) (*models.Transaction, error)
 	FindAll() ([]*models.Transaction, error)
 	Update(transaction *models.Transaction) error
-	Delete(id string) error
+	Delete(merchantID string) error
+	FindByMerchantID(merchantID string) ([]*models.Transaction, error)
+	FindByUserID(userID string) ([]*models.Transaction, error)
 }
 
 // InMemoryTransactionRepository is an in-memory implementation of TransactionRepository.
@@ -85,4 +87,26 @@ func (r *InMemoryTransactionRepository) Delete(id string) error {
 
 	delete(r.transactions, id)
 	return nil
+}
+
+func (r *InMemoryTransactionRepository) FindByMerchantID(merchantID string) ([]*models.Transaction, error) {
+
+	var matchingTransactions []*models.Transaction
+	for _, transaction := range r.transactions {
+		if transaction.MerchantID == merchantID {
+			matchingTransactions = append(matchingTransactions, transaction)
+		}
+	}
+	return matchingTransactions, nil
+}
+
+func (r *InMemoryTransactionRepository) FindByUserID(userID string) ([]*models.Transaction, error) {
+
+	var matchingTransactions []*models.Transaction
+	for _, transaction := range r.transactions {
+		if transaction.UserID == userID {
+			matchingTransactions = append(matchingTransactions, transaction)
+		}
+	}
+	return matchingTransactions, nil
 }
