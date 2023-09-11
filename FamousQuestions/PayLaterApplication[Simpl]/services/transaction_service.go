@@ -1,5 +1,3 @@
-// transaction_service.go
-
 package services
 
 import (
@@ -34,17 +32,47 @@ func NewTransactionService(
 func (s *TransactionService) CarryOutTransaction(userID, merchantID string, amount float64) (*models.Transaction, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	
+	userChan := make(chan *models.User)
+	merchantChan := make(chan *models.Merchant)
+	errChan := make(chan error)
 
-	// Retrieve user and merchant
-	user, err := s.userRepo.FindByID(userID)
-	if err != nil {
-		return nil, err
+	// Retrieve user and merchant concurrently.
+	go func() {
+		user, err := s.userRepo.FindByID(userID)
+		if err != nil {
+			errChan <- err
+			return
+		}
+		userChan <- user
+	}()
+
+	go func() {
+		merchant, err := s.merchantRepo.FindByID(merchantID)
+		if err != nil {
+			errChan <- err
+			return
+		}
+		merchantChan <- merchant
+	}()
+
+	// Wait for user and merchant data, or an error.
+	var user *models.User
+	var merchant *models.Merchant
+	for i := 0; i < 2; i++ {
+		select {
+		case u := <-userChan:
+			user = u
+		case m := <-merchantChan:
+			merchant = m
+		case err := <-errChan:
+			return nil, err
+		}
 	}
 
-	merchant, err := s.merchantRepo.FindByID(merchantID)
-	if err != nil {
-		return nil, err
-	}
+	close(userChan)
+	close(merchantChan)
+	close(errChan)
 
 	if amount > user.CreditLimit {
 		return nil, models.ErrTransactionRejected
@@ -53,12 +81,12 @@ func (s *TransactionService) CarryOutTransaction(userID, merchantID string, amou
 	discountedAmount := amount - (amount * merchant.DiscountPercent / 100)
 
 	// Create a new transaction
-	transactionID := "T" + uuid.New().String()
+	transactionID := "T:" + uuid.New().String()
 	transaction := models.NewTransaction(transactionID, userID, merchantID, amount, discountedAmount, time.Now())
 
 	if err := s.transactionRepo.Create(transaction); err != nil {
 		return nil, err
 	}
-
+	user.Dues += amount * merchant.DiscountPercent / 100
 	return transaction, nil
 }

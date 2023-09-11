@@ -25,7 +25,7 @@ func (s *MerchantService) OnboardMerchant(name string, email string, discount fl
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	merchantID := "M" + uuid.New().String()
+	merchantID := "M:" + uuid.New().String()
 	merchant := models.NewMerchant(merchantID, name, email, discount)
 
 	if err := s.repo.Create(merchant); err != nil {

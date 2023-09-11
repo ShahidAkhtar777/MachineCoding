@@ -51,7 +51,7 @@ func (r *InMemoryUserRepository) FindByID(id string) (*models.User, error) {
 
 func (r *InMemoryUserRepository) FindAll() ([]*models.User, error) {
 	r.mu.RLock()
-	defer r.mu.Unlock()
+	defer r.mu.RUnlock()
 
 	var users []*models.User
 	for _, user := range r.users {
@@ -86,6 +86,9 @@ func (r *InMemoryUserRepository) Delete(id string) error {
 }
 
 func (r *InMemoryUserRepository) GetCreditLimit(userID string) (float64, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	
 	for _, user := range r.users {
 		if user.ID == userID {
 			return user.CreditLimit, nil

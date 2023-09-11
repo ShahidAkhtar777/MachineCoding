@@ -90,6 +90,8 @@ func (r *InMemoryTransactionRepository) Delete(id string) error {
 }
 
 func (r *InMemoryTransactionRepository) FindByMerchantID(merchantID string) ([]*models.Transaction, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 
 	var matchingTransactions []*models.Transaction
 	for _, transaction := range r.transactions {
@@ -101,6 +103,8 @@ func (r *InMemoryTransactionRepository) FindByMerchantID(merchantID string) ([]*
 }
 
 func (r *InMemoryTransactionRepository) FindByUserID(userID string) ([]*models.Transaction, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 
 	var matchingTransactions []*models.Transaction
 	for _, transaction := range r.transactions {
