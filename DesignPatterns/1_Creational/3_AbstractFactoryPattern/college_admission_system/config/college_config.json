@@ -1,0 +1,32 @@
+{
+    "colleges": {
+        "IIT": {
+            "courses": [
+                {"name": "Advanced Quantum Mechanics", "min_score": 90, "duration": 4, "credits": 24},
+                {"name": "Modern Physics", "min_score": 80, "duration": 3, "credits": 18},
+                {"name": "Basic Physics", "min_score": 0, "duration": 2, "credits": 12}
+            ]
+        },
+        "NIT": {
+            "courses": [
+                {"name": "Advanced Computer Science", "min_score": 85, "duration": 4, "credits": 24},
+                {"name": "Data Structures", "min_score": 75, "duration": 3, "credits": 18},
+                {"name": "Introduction to Programming", "min_score": 0, "duration": 2, "credits": 12}
+            ]
+        },
+        "IIIT": {
+            "courses": [
+                {"name": "Artificial Intelligence", "min_score": 80, "duration": 4, "credits": 24},
+                {"name": "Machine Learning", "min_score": 70, "duration": 3, "credits": 18},
+                {"name": "Data Science Basics", "min_score": 0, "duration": 2, "credits": 12}
+            ]
+        },
+        "Private": {
+            "courses": [
+                {"name": "Business Management", "min_score": 70, "duration": 4, "credits": 24},
+                {"name": "Marketing 101", "min_score": 60, "duration": 3, "credits": 18},
+                {"name": "Introduction to Business", "min_score": 0, "duration": 2, "credits": 12}
+            ]
+        }
+    }
+}

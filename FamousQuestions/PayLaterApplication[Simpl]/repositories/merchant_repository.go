@@ -27,8 +27,8 @@ func NewInMemoryMerchantRepository() *InMemoryMerchantRepository {
 }
 
 func (r *InMemoryMerchantRepository) Create(merchant *models.Merchant) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+	//r.mu.Lock()
+	//defer r.mu.Unlock()
 
 	if _, exists := r.merchants[merchant.ID]; exists {
 		return models.ErrMerchantAlreadyExists

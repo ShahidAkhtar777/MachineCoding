@@ -22,10 +22,10 @@ func NewMerchantService(repo repositories.MerchantRepository) *MerchantService {
 
 // OnboardMerchant allows a merchant to be onboarded with the amount of discounts they offer.
 func (s *MerchantService) OnboardMerchant(name string, email string, discount float64) (*models.Merchant, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	//s.mu.Lock()
+	//defer s.mu.Unlock()
 
-	merchantID := "M:" + uuid.New().String()
+	merchantID := uuid.New().String()
 	merchant := models.NewMerchant(merchantID, name, email, discount)
 
 	if err := s.repo.Create(merchant); err != nil {
@@ -37,8 +37,8 @@ func (s *MerchantService) OnboardMerchant(name string, email string, discount fl
 
 // ChangeMerchantDiscount allows a merchant to change the discount they offer.
 func (s *MerchantService) ChangeMerchantDiscount(merchantID string, newDiscount float64) (*models.Merchant, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	//s.mu.Lock()
+	//defer s.mu.Unlock()
 
 	merchant, err := s.repo.FindByID(merchantID)
 	if err != nil {

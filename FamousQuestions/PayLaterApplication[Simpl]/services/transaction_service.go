@@ -32,7 +32,7 @@ func NewTransactionService(
 func (s *TransactionService) CarryOutTransaction(userID, merchantID string, amount float64) (*models.Transaction, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	
+
 	userChan := make(chan *models.User)
 	merchantChan := make(chan *models.Merchant)
 	errChan := make(chan error)
@@ -69,6 +69,7 @@ func (s *TransactionService) CarryOutTransaction(userID, merchantID string, amou
 			return nil, err
 		}
 	}
+	//TODO -
 
 	close(userChan)
 	close(merchantChan)
@@ -81,12 +82,13 @@ func (s *TransactionService) CarryOutTransaction(userID, merchantID string, amou
 	discountedAmount := amount - (amount * merchant.DiscountPercent / 100)
 
 	// Create a new transaction
-	transactionID := "T:" + uuid.New().String()
+	transactionID := uuid.New().String()
 	transaction := models.NewTransaction(transactionID, userID, merchantID, amount, discountedAmount, time.Now())
 
 	if err := s.transactionRepo.Create(transaction); err != nil {
 		return nil, err
 	}
 	user.Dues += amount * merchant.DiscountPercent / 100
+	// update in db as well
 	return transaction, nil
 }
